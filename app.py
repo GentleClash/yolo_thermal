@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, redirect
 from ultralytics import YOLO
 import cv2
 import numpy as np
@@ -31,7 +31,6 @@ def upload_file():
             filename = str(uuid.uuid4()) + '_' + file.filename
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
-            
             if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                 return process_image(filepath, filename)
             elif filename.lower().endswith(('.mp4', '.avi', '.mov')):
@@ -119,7 +118,7 @@ def process_video(filepath, filename):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
     
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'H264')
     out = cv2.VideoWriter(output_filepath, fourcc, fps, (width, height))
     
     # Process video frames
@@ -135,6 +134,25 @@ def process_video(filepath, filename):
                            result_file=output_filename,
                            file_type='video',
                            zip=zip)
+
+
+@app.route('/live', methods=['GET'])
+def live():
+    cap = cv2.VideoCapture(0)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+            
+        results = model.predict(frame, show=True)
+        print(results)
+        
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+    return redirect('/')
 
 
 if __name__ == '__main__':
