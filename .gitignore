@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 static/uploads
+static/crops
 
 # Distribution / packaging
 .Python

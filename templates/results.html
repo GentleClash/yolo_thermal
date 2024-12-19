@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             text-align: center;
@@ -16,9 +16,34 @@
             flex-direction: column;
             align-items: center;
         }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .image-box {
+            flex: 1;
+            max-width: 500px;
+        }
+        .crops-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .crop-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .crop-item img {
+            max-width: 100%;
+            height: auto;
+        }
         img, video {
             max-width: 100%;
-            margin-bottom: 20px;
+            height: auto;
         }
         table {
             width: 100%;
@@ -40,44 +65,50 @@
     
     <div class="result-container">
         {% if original_file %}
-            <h2>Original File</h2>
-            {% if file_type == 'image' %}
-                <img src="{{ url_for('static', filename='uploads/' + original_file) }}" alt="Original Image">
-            {% elif file_type == 'video' %}
-                <video controls>
-                    <source src="{{ url_for('static', filename='uploads/' + original_file) }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            {% endif %}
+            <div class="image-container">
+                <div class="image-box">
+                    <h2>Original File</h2>
+                    {% if file_type == 'image' %}
+                        <img src="{{ url_for('static', filename='uploads/' + original_file) }}" alt="Original Image">
+                    {% elif file_type == 'video' %}
+                        <video controls>
+                            <source src="{{ url_for('static', filename='uploads/' + original_file) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
+                </div>
+                
+                {% if not no_detection and result_file %}
+                <div class="image-box">
+                    <h2>Annotated File</h2>
+                    {% if file_type == 'image' %}
+                        <img src="{{ url_for('static', filename='uploads/' + result_file) }}" alt="Annotated Image">
+                    {% elif file_type == 'video' %}
+                        <video controls>
+                            <source src="{{ url_for('static', filename='uploads/' + result_file) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
             
-            {% if no_detection %}
+            {% if detected_objects %}
+                <h2>Detected Objects</h2>
+                <div class="crops-container">
+                    {% for obj in detected_objects %}
+                        <div class="crop-item">
+                            <img src="{{ url_for('static', filename='crops/' + obj.crop_filename) }}" 
+                                 alt="{{ obj.class_name }}">
+                            <p><strong>{{ obj.class_name }}</strong></p>
+                            <p>Confidence: {{ "%.2f"|format(obj.confidence * 100) }}%</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% elif no_detection %}
                 <div class="no-detection">
                     <p>No objects detected.</p>
                 </div>
-            {% else %}
-                <h2>Annotated File</h2>
-                {% if file_type == 'image' %}
-                    <img src="{{ url_for('static', filename='uploads/' + result_file) }}" alt="Annotated Image">
-                {% elif file_type == 'video' %}
-                    <video controls width="100%" playsinline preload="auto">
-                        <source src="{{ url_for('static', filename='uploads/' + result_file) }}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                {% endif %}
-                
-                <h2>Detected Objects</h2>
-                <table>
-                    <tr>
-                        <th>Class</th>
-                        <th>Confidence</th>
-                    </tr>
-                    {% for cls, conf in zip(detected_classes, confidence_scores) %}
-                    <tr>
-                        <td>{{ cls }}</td>
-                        <td>{{ "%.2f"|format(conf * 100) }}%</td>
-                    </tr>
-                    {% endfor %}
-                </table>
             {% endif %}
         {% endif %}
         
@@ -86,39 +117,3 @@
     </div>
 </body>
 </html>
-
-
-<!--
-<div class="result-container">
-    {% if original_image %}
-        <h2>Original Image</h2>
-        <img src="{{ url_for('static', filename='uploads/' + original_image) }}" alt="Original Image">
-        
-        {% if no_detection %}
-            <div class="no-detection">
-                <p>No objects detected in the image.</p>
-            </div>
-        {% else %}
-            <h2>Annotated Image</h2>
-            <img src="{{ url_for('static', filename='uploads/' + result_image) }}" alt="Annotated Image">
-            
-            <h2>Detected Objects</h2>
-            <table>
-                <tr>
-                    <th>Class</th>
-                    <th>Confidence</th>
-                </tr>
-                {% for cls, conf in zip(detected_classes, confidence_scores) %}
-                <tr>
-                    <td>{{ cls }}</td>
-                    <td>{{ "%.2f"|format(conf * 100) }}%</td>
-                </tr>
-                {% endfor %}
-            </table>
-        {% endif %}
-    {% endif %}
-    
-    <br>
-    <a href="{{ url_for('upload_file') }}">Upload Another File</a>
-</div>
--->
