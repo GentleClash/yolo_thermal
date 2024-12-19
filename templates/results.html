@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detection Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        img, video {
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .no-detection {
+            color: orange;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Detection Results</h1>
+    
+    <div class="result-container">
+        {% if original_file %}
+            <h2>Original File</h2>
+            {% if file_type == 'image' %}
+                <img src="{{ url_for('static', filename='uploads/' + original_file) }}" alt="Original Image">
+            {% elif file_type == 'video' %}
+                <video controls>
+                    <source src="{{ url_for('static', filename='uploads/' + original_file) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
+            
+            {% if no_detection %}
+                <div class="no-detection">
+                    <p>No objects detected.</p>
+                </div>
+            {% else %}
+                <h2>Annotated File</h2>
+                {% if file_type == 'image' %}
+                    <img src="{{ url_for('static', filename='uploads/' + result_file) }}" alt="Annotated Image">
+                {% elif file_type == 'video' %}
+                    <video controls width="100%" playsinline preload="auto">
+                        <source src="{{ url_for('static', filename='uploads/' + result_file) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
+                
+                <h2>Detected Objects</h2>
+                <table>
+                    <tr>
+                        <th>Class</th>
+                        <th>Confidence</th>
+                    </tr>
+                    {% for cls, conf in zip(detected_classes, confidence_scores) %}
+                    <tr>
+                        <td>{{ cls }}</td>
+                        <td>{{ "%.2f"|format(conf * 100) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+        {% endif %}
+        
+        <br>
+        <a href="{{ url_for('upload_file') }}">Upload Another File</a>
+    </div>
+</body>
+</html>
+
+
+<!--
+<div class="result-container">
+    {% if original_image %}
+        <h2>Original Image</h2>
+        <img src="{{ url_for('static', filename='uploads/' + original_image) }}" alt="Original Image">
+        
+        {% if no_detection %}
+            <div class="no-detection">
+                <p>No objects detected in the image.</p>
+            </div>
+        {% else %}
+            <h2>Annotated Image</h2>
+            <img src="{{ url_for('static', filename='uploads/' + result_image) }}" alt="Annotated Image">
+            
+            <h2>Detected Objects</h2>
+            <table>
+                <tr>
+                    <th>Class</th>
+                    <th>Confidence</th>
+                </tr>
+                {% for cls, conf in zip(detected_classes, confidence_scores) %}
+                <tr>
+                    <td>{{ cls }}</td>
+                    <td>{{ "%.2f"|format(conf * 100) }}%</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    {% endif %}
+    
+    <br>
+    <a href="{{ url_for('upload_file') }}">Upload Another File</a>
+</div>
+-->
