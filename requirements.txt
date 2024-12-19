@@ -1,6 +1,6 @@
-ultralytics
-opencv
-opencv-python-headless
+ultralytics==8.3.49
+opencv-python==4.10.0.84
+opencv-python-headless==4.10.0.84
 matplotlib
 numpy
 flask
