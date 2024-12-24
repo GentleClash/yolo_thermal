@@ -36,7 +36,7 @@ def upload_file():
             
             if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                 return process_image(filepath, filename)
-            elif filename.lower().endswith(('.mp4', '.avi', '.mov')):
+            elif filename.lower().endswith(('.mp4', '.avi', '.mov', '.webm')):
                 return process_video(filepath, filename)
             else:
                 return render_template('index.html', error='Unsupported file type')
@@ -44,7 +44,7 @@ def upload_file():
     return render_template('index.html')
 
 def process_image(filepath, filename):
-    results = model(filepath, conf=0.5, verbose=True)
+    results = model(filepath, conf=0.8, verbose=True)
     
     if results and len(results) > 0:
         first_result = results[0]
@@ -104,7 +104,7 @@ def process_video(filepath, filename):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
     
-    fourcc = cv2.VideoWriter_fourcc(*'H264')
+    fourcc = cv2.VideoWriter_fourcc(*'VP80')
     out = cv2.VideoWriter(output_filepath, fourcc, fps, (width, height))
     
     # Process video frames
